@@ -32,7 +32,9 @@ const {
 
 routinesRouter.get("/", async (req, res, next) => {
   try {
+    console.log('inroutines')
     const routines = await getAllRoutines();
+    console.log(routines)
     if (routines) {
       res.send(routines);
     } else {
@@ -41,15 +43,18 @@ routinesRouter.get("/", async (req, res, next) => {
         message: "getAllRoutines",
       });
     }
-  } catch ({ name, message }) {
-    next({ name, message });
+  } catch ( error ) {
+    next( error );
   }
 });
 
 routinesRouter.post("/", requireUser, async (req, res, next) => {
+  console.log(req.body, "HOERLEREO")
   const { creatorId, isPublic, name, goal } = req.body;
   try {
-    const routine = await createRoutine(creatorId, isPublic, name, goal);
+    const routine = await createRoutine({creatorId, isPublic, name, goal});
+
+  console.log(routine, " HELLO WORLD")
     if (routine) {
       res.send(routine);
     } else {
@@ -58,13 +63,14 @@ routinesRouter.post("/", requireUser, async (req, res, next) => {
         message: "createRoutine",
       });
     }
-  } catch ({ name, message }) {
-    next({ name, message });
+  } catch ( error ) {
+    next( error );
   }
 });
 
 routinesRouter.patch("/:routineId", requireUser, async (req, res, next) => {
   const { routineId } = req.params;
+  console.log(routineId, "ROUTINEEEEEE")
   const routine = getRoutineById(routineId);
   const { isPublic, name, goal } = routine;
   try {
@@ -77,8 +83,8 @@ routinesRouter.patch("/:routineId", requireUser, async (req, res, next) => {
         message: "updateRoutine",
       });
     }
-  } catch ({ name, message }) {
-    next({ name, message });
+  } catch ( error ) {
+    next( error );
   }
 });
 
@@ -94,8 +100,8 @@ routinesRouter.delete("/:routineId", requireUser, async (req, res, next) => {
         message: "destroyRoutine",
       });
     }
-  } catch ({ name, message }) {
-    next({ name, message });
+  } catch ( error ) {
+    next( error );
   }
 });
 
@@ -121,10 +127,10 @@ routinesRouter.post(
           message: "destroyRoutine",
         });
       }
-    } catch ({ name, message }) {
-      next({ name, message });
+    } catch ( error ) {
+      next( error );
     }
-  }
-);
+  });
+
 
 module.exports = routinesRouter;

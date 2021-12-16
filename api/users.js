@@ -128,7 +128,7 @@ usersRouter.get("/me", async (req, res, next) => {
 
    }else{
      console.log(req.user, "!!!!!!!!!!!!!")
-     req.send(req.user)
+     res.send(req.user)
    }
     // if (token) {
     //   console.log(req.user, "req.user");
