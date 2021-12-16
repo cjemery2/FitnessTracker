@@ -43,8 +43,8 @@ aRouter.patch("/:routineActivityId", requireUser, async (req, res, next) => {
         message: "destroyRoutineActivity",
       });
     }
-  } catch ({ name, message }) {
-    next({ name, message });
+  } catch (err) {
+    next(err);
   }
 });
 
@@ -52,16 +52,17 @@ aRouter.delete("/:routineActivityId", requireUser, async (req, res, next) => {
   const { routineActivityId } = req.params;
   try {
     const close = await destroyRoutineActivity(routineActivityId);
-    if (close) {
-      res.send(close);
-    } else {
+    if (!close) {
       next({
         name: "error",
         message: "destroyRoutineActivity",
       });
     }
-  } catch ({ name, message }) {
-    next({ name, message });
+    // else {
+    //   res.send(close);
+    // }
+  } catch (err) {
+    next(err);
   }
 });
 
