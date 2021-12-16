@@ -32,9 +32,18 @@ aRouter.use((req, res, next) => {
 });
 
 aRouter.patch("/:routineActivityId", requireUser, async (req, res, next) => {
-  const { id, name, description } = req.body;
+  // const { id, name, description } = req.body; // there is no id that is a part of body.  There should just be a count and duration.  The id that we need is coming off of req.params and it should be req.params.routineActivityId
+  const { count, duration } = req.body;
+  const { routineActivityId } = req.params;
+
   try {
-    const patch = await updateActivity(id, name, description);
+    // const patch = await updateActivity(id, name, description);  also, in this route we are not trying to update the activity, we are instead trying to update the routineActivity by using the updateRoutineActivity function.
+
+    const patch = await updateRoutineActivity({
+      id: req.params.routineActivityId,
+      count,
+      duration,
+    });
     if (patch) {
       res.send(patch);
     } else {
