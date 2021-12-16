@@ -1,5 +1,6 @@
 const { client } = require("./client");
 const { attachActivitiesToRoutines } = require("./activities");
+const util = require('./utilities'); // I added this in to help with the update function
 
 async function getRoutineById(id) {
   try {
@@ -61,8 +62,8 @@ async function getAllPublicRoutines() {
             From routines
             JOIN users ON users.id = routines."creatorId"
             WHERE "isPublic" = true;
-        `)
-        return attachActivitiesToRoutines(routines)
+        `);
+    return attachActivitiesToRoutines(routines);
     //select and return an array of public routines, include their activities
   } catch (error) {
     throw error;
@@ -70,7 +71,8 @@ async function getAllPublicRoutines() {
 }
 async function getAllRoutinesByUser({ username }) {
   try {
-    const { rows: routines } = await client.query(`
+    const { rows: routines } = await client.query(
+      `
     SELECT 
     routines.id,
     routines."creatorId",
@@ -81,9 +83,11 @@ async function getAllRoutinesByUser({ username }) {
     From routines
     JOIN users ON users.id = routines."creatorId"
     WHERE "isPublic" = true AND username = $1;
-`, [username]);
+`,
+      [username]
+    );
 
-return attachActivitiesToRoutines(routines)
+    return attachActivitiesToRoutines(routines);
     //select and return an array of all routines made by user, include their activities
   } catch (error) {
     throw error;
@@ -91,7 +95,8 @@ return attachActivitiesToRoutines(routines)
 }
 async function getPublicRoutinesByUser({ username }) {
   try {
-    const { rows: routines } = await client.query(`
+    const { rows: routines } = await client.query(
+      `
             SELECT 
             routines.id,
             routines."creatorId",
@@ -102,8 +107,10 @@ async function getPublicRoutinesByUser({ username }) {
             From routines
             JOIN users ON users.id = routines."creatorId"
             WHERE "isPublic" = true AND username = $1;
-        `, [username]);
-    return attachActivitiesToRoutines(routines)
+        `,
+      [username]
+    );
+    return attachActivitiesToRoutines(routines);
     //select and return an array of public routines made by user, include their activities
   } catch (error) {
     throw error;
@@ -122,10 +129,9 @@ async function getPublicRoutinesByActivity({ id }) {
     From routines
     JOIN users ON users.id = routines."creatorId"
     WHERE "isPublic" = true;
-`)
+`);
 
-
-return attachActivitiesToRoutines(routines)
+    return attachActivitiesToRoutines(routines);
     //select and return an array of public routines which have a specific activityId in their routine_activities join, include their activities
   } catch (error) {
     throw error;
@@ -148,39 +154,77 @@ async function createRoutine({ creatorId, isPublic, name, goal }) {
     throw error;
   }
 }
-async function updateRoutine({ id, isPublic, name, goal }) {
+
+
+// this function is not always going to work, because the user may only be updating one or two of the fields. Currently the function is expecting to always be changing: name, isPublic and goal.  However this is not always the case. 
+// async function updateRoutine({ id, isPublic, name, goal }) {
+//   console.log();
+//   try {
+//     const {
+//       rows: [routines],
+//     } = await client.query(
+//       `
+//   UPDATE routines
+//   SET 
+//   "isPublic" = $2,
+//   "name" = $3,
+//   "goal" = $4
+//   WHERE "id"= $1
+//   RETURNING *;
+// `,
+//       [id, isPublic, name, goal]
+//     );
+//     //delete routines.id
+//     return routines;
+//     //Find the routine with id equal to the passed in id
+//     //Don't update the routine id, but do update the isPublic status, name, or goal, as necessary
+//     //Return the updated routine
+//   } catch (error) {
+//     throw error;
+//   }
+// }
+
+async function updateRoutine({id, ...fields}) {
   try {
-    const {
-      rows: [routines],
-  } = await client.query(
-      `
-  UPDATE routines
-  SET 
-  "isPublic" = $2,
-  "name" = $3,
-  "goal" = $4
-  WHERE "id"= $1
-  RETURNING *;
-`,[id, isPublic, name, goal]
-  );
-  //delete routines.id
-  return routines;
-    //Find the routine with id equal to the passed in id
-    //Don't update the routine id, but do update the isPublic status, name, or goal, as necessary
-    //Return the updated routine
+    const toUpdate = {}
+    for(let column in fields) {
+      if(fields[column] !== undefined) toUpdate[column] = fields[column];
+    }
+    let routine;
+    if (util.dbFields(fields).insert.length > 0) {
+      const {rows} = await client.query(`
+          UPDATE routines 
+          SET ${ util.dbFields(toUpdate).insert }
+          WHERE id=${ id }
+          RETURNING *;
+      `, Object.values(toUpdate));
+      routine = rows[0];
+
+      console.log(routine, 'db update routine')
+      return routine;
+    }
   } catch (error) {
     throw error;
   }
 }
+
+
+
+
 async function destroyRoutine(id) {
   try {
-    const { rows: [routine] } = await client.query(`
+    const {
+      rows: [routine],
+    } = await client.query(
+      `
             DELETE FROM routines
             WHERE id = $1
             RETURNING *;
-        `, [id]);
+        `,
+      [id]
+    );
 
-        return routine;
+    return routine;
     //remove routine from database
     //Make sure to delete all the routine_activities whose routine is the one being deleted.
   } catch (error) {

@@ -32,9 +32,9 @@ const {
 
 routinesRouter.get("/", async (req, res, next) => {
   try {
-    console.log('inroutines')
-    const routines = await getAllRoutines();
-    console.log(routines)
+    
+    // const routines = await getAllRoutines(); //this function was breaking because you were grabbing all routines, but the test is only asking for the public routines
+    const routines = await getAllPublicRoutines();
     if (routines) {
       res.send(routines);
     } else {
@@ -43,18 +43,21 @@ routinesRouter.get("/", async (req, res, next) => {
         message: "getAllRoutines",
       });
     }
-  } catch ( error ) {
-    next( error );
+  } catch (error) {
+    next(error);
   }
 });
 
 routinesRouter.post("/", requireUser, async (req, res, next) => {
-  console.log(req.body, "HOERLEREO")
-  const { creatorId, isPublic, name, goal } = req.body;
+  const { isPublic, name, goal } = req.body;
   try {
-    const routine = await createRoutine({creatorId, isPublic, name, goal});
+    const routine = await createRoutine({
+      creatorId: req.user.id,
+      isPublic,
+      name,
+      goal,
+    }); //here we need to get the user.id off of req.user.id.  This value is not being passed as a part of the body from the test.
 
-  console.log(routine, " HELLO WORLD")
     if (routine) {
       res.send(routine);
     } else {
@@ -63,18 +66,20 @@ routinesRouter.post("/", requireUser, async (req, res, next) => {
         message: "createRoutine",
       });
     }
-  } catch ( error ) {
-    next( error );
+  } catch (error) {
+    next(error);
   }
 });
 
 routinesRouter.patch("/:routineId", requireUser, async (req, res, next) => {
   const { routineId } = req.params;
-  console.log(routineId, "ROUTINEEEEEE")
+
+  
+  // const { isPublic, name, goal } = routine; // these values should be coming off the req.body
+  const { isPublic, name, goal } = req.body
   const routine = getRoutineById(routineId);
-  const { isPublic, name, goal } = routine;
   try {
-    const update = await updateRoutine(routineId, isPublic, name, goal);
+    const update = await updateRoutine({ id: routineId, isPublic, name, goal }); //this needed to be wrapped in {}
     if (update) {
       res.send(update);
     } else {
@@ -83,8 +88,8 @@ routinesRouter.patch("/:routineId", requireUser, async (req, res, next) => {
         message: "updateRoutine",
       });
     }
-  } catch ( error ) {
-    next( error );
+  } catch (error) {
+    next(error);
   }
 });
 
@@ -100,8 +105,8 @@ routinesRouter.delete("/:routineId", requireUser, async (req, res, next) => {
         message: "destroyRoutine",
       });
     }
-  } catch ( error ) {
-    next( error );
+  } catch (error) {
+    next(error);
   }
 });
 
@@ -112,12 +117,12 @@ routinesRouter.post(
     const { routineId } = req.params;
     const { activityId, count, duration } = req.body;
     try {
-      const routine = await addActivityToRoutine(
+      const routine = await addActivityToRoutine({
         routineId,
         activityId,
         count,
-        duration
-      );
+        duration,
+      }); // these variables needed to be sent as part of an object
 
       if (routine) {
         res.send(routine);
@@ -127,10 +132,10 @@ routinesRouter.post(
           message: "destroyRoutine",
         });
       }
-    } catch ( error ) {
-      next( error );
+    } catch (error) {
+      next(error);
     }
-  });
-
+  }
+);
 
 module.exports = routinesRouter;
