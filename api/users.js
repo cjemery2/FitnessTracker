@@ -24,7 +24,6 @@ const { requireUser } = require("./utils");
 usersRouter.post("/login", async (req, res, next) => {
   const { username, password } = req.body;
 
-  console.log("Hello");
 
   // request must have both
   if (!username || !password) {
@@ -36,8 +35,7 @@ usersRouter.post("/login", async (req, res, next) => {
 
   try {
     const user = await getUserByUsername(username);
-    console.log("this is user", user);
-    if (!user) {
+        if (!user) {
       next({
         name: "IncorrectCredentialsError",
         message: "Username or password is incorrect",
@@ -51,11 +49,9 @@ usersRouter.post("/login", async (req, res, next) => {
           expiresIn: "1h",
         }
       );
-      console.log("this is token", token);
       res.send({ user, token, message: "you are logged in!" });
     }
   } catch (error) {
-    console.log(error);
     next(error);
   }
 });
@@ -118,7 +114,6 @@ usersRouter.get("/me", async (req, res, next) => {
   // const token = req.headers.authorization;
   try {
     //const user = await getUserByUsername(mainUser);
-    console.log(req.user)
    if(!req.user){
     res.status(401);
     next({

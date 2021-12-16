@@ -185,13 +185,11 @@ async function createRoutine({ creatorId, isPublic, name, goal }) {
 // }
 
 async function updateRoutine({id, ...fields}) {
-  console.log(fields, ' in update routines in db')
   try {
     const toUpdate = {}
     for(let column in fields) {
       if(fields[column] !== undefined) toUpdate[column] = fields[column];
     }
-    console.log(util.dbFields(toUpdate).insert, 'utils!!!!@#!@#')
     let routine;
     if (util.dbFields(fields).insert.length > 0) {
       const {rows} = await client.query(`

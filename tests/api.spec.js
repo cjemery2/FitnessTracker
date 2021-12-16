@@ -167,9 +167,7 @@ describe('API', () => {
       it('Returns a list of public routines, includes the activities with them', async () => {
         const publicRoutinesFromDB = await getAllPublicRoutines();
 
-        console.log(publicRoutinesFromDB, 'public routines from db in tests!!!!!!!')
         const {data: publicRoutinesFromAPI} = await axios.get(`${API_URL}/api/routines`);
-        console.log(publicRoutinesFromAPI, 'public routines from api in tests!!!!!!!')
         expect(publicRoutinesFromAPI).toEqual(publicRoutinesFromDB);
       });
     });
@@ -177,11 +175,9 @@ describe('API', () => {
     describe('POST /routines (*)', () => {
       it('Creates a new routine, with the creatorId matching the logged in user', async () => {
         const {data: respondedRoutine} = await axios.post(`${API_URL}/api/routines`, routineToCreateAndUpdate, { headers: {'Authorization': `Bearer ${token}`} });
-        // console.log(respondedRoutine, 'respondedRoutine in test')
         expect(respondedRoutine.name).toEqual(routineToCreateAndUpdate.name);
         expect(respondedRoutine.goal).toEqual(routineToCreateAndUpdate.goal);
         expect(respondedRoutine.name).toEqual(routineToCreateAndUpdate.name);
-        console.log(respondedRoutine, 'respondedRoutine!!!!!')
         expect(respondedRoutine.creatorId).toEqual(registeredUser.id);
         routineToCreateAndUpdate = respondedRoutine;
       });
@@ -197,12 +193,10 @@ describe('API', () => {
       });
     });
     describe('PATCH /routines/:routineId (**)', () => {
-      console.log(routineToCreateAndUpdate, ' ROUTINETOCREATEUPDATE!!!!!')
       it('Updates a routine, notably changing public/private, the name, or the goal', async () => {
         const {data: respondedRoutine} = await axios.patch(`${API_URL}/api/routines/${routineToCreateAndUpdate.id}`, newRoutineData, { headers: {'Authorization': `Bearer ${token}`} });
         expect(respondedRoutine.name).toEqual(newRoutineData.name);
         expect(respondedRoutine.goal).toEqual(newRoutineData.goal);
-        console.log(respondedRoutine, 'responded reoutine in api tests!!!!!!!')
         routineToCreateAndUpdate = respondedRoutine;
       });
     });

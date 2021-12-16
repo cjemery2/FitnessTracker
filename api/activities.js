@@ -23,7 +23,7 @@ activityRouter.get("/", async (req, res, next) => {
 activityRouter.post("/", requireUser, async (req, res, next) => {
   const { name, description } = req.body;
   const activityData = {};
-console.log('here i am', name,description)
+
   try {
     activityData.name = name;
     activityData.description = description;
